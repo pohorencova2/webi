@@ -1,0 +1,340 @@
+<html>
+    <head>
+        <title>INTERPRETER</title>        
+    </head>    
+    <body>
+        <script type="text/javascript" src="diagrams.js"></script>
+        <script type="text/javascript" src="parser.js"></script> 
+        <script type="text/javascript" src="scanner.js"></script> 
+        <script type="text/javascript" src="syntaxTrees.js"></script>       
+        
+        
+        <textarea onkeydown="if(event.keyCode===9){var v=this.value,s=this.selectionStart,e=this.selectionEnd;this.value=v.substring(0, s)+'\t'+v.substring(e);this.selectionStart=this.selectionEnd=s+1;return false;}" id="code" rows="40" cols="100"></textarea>
+        <button type="button" onclick="start()">Run</button><br>
+        <label for="consoleName">Console:</label><br>
+        <textarea id="console" rows="10" cols="70"></textarea>                              	
+           
+      <script>          
+        
+            
+            
+        var input;            
+        var regex=/^[a-zA-Z]+$/;  //used in isLetter
+        var character="";
+        var index;
+        var token = "";
+        var position;            
+            
+            
+     function start() {         
+       
+       var getInput = document.getElementById("code").value.replace(/\n/g, " "); //remove all new lines 
+       input = getInput.replace(/\t/g, " ");    //remove tabs
+       diag = documentCode;
+       index=0;
+       next();
+       scan(); 
+       parse();   
+       console.log("////////////////////////////////////");
+       startBuild();       
+       
+    }         
+            
+            
+            
+   /* function test(code, what) {
+       input = code;
+       diag = what;
+ 
+       console.log("VYPIS AKO VYZERAJU TOKENY");
+        index=0;
+        next();
+        scan();  
+        while (token != ""){             
+            console.log(token);            
+            scan();
+        }
+        //console.log(code);
+        input = code;
+        index=0;
+        next();
+        scan(); 
+        parse();   
+        console.log("////////////////////////////////////");
+        startBuild();
+       
+       
+    } */
+        
+        /****TEST CASES       *****/  
+          
+     //test("5+4+3",numberExpression);        
+     //test("Startup() end",method );   
+    //console.log("NUMBER EXPRESSION TRUE");            
+    //test("5.2",numberExpression);        
+    //test("-4",numberExpression);             
+    //test("5+1/2",numberExpression);
+    //test("(1+4)%2-(-11)",numberExpression); 
+    //test("(1+4)%2",numberExpression); 
+   //test("-5*4-(8+7/2)-4+7",numberExpression); 
+    //test("-5*(4-8)+7/(2-4)+7",numberExpression); 
+     //test("(1.4+(-5.8))",numberExpression);
+    
+    
+   /*   
+    test("(ahoj()+(-5.8))",numberExpression);   
+    test("(-AHOJ+-CISLO)",numberExpression);
+    test("AHOJ.start()*BLA+4-5.2/((VAR.PODVAR+bla())-Student.AGE)",numberExpression); 
+    test("5+-+-4",numberExpression);
+    test("5-+BLA-(-AHOJ.start())",numberExpression); 
+    test("BLA-(-AHOJ.start()+9)",numberExpression); 
+    test("constant Number CISLO=AHOJ.start()*BLA+4-5.2/((VAR.PODVAR+bla())-Student.AGE)",numberDI)
+            
+            
+            
+            
+            
+    
+            
+            //test("AHOJ.call()",instanceMethodCall);
+   // test("Integer A,Boolean B, String",parameters);
+    //test("A == 'nie'",equals);
+    //test("if A == 'nie' A = 'ano' elseif B == 'ano' B = 'nie' else C = 'neviem' end",conditionalStatement);
+     
+     // test("class Student void start() end void start2() end class Student2 void start3() end",documentCode);   
+       //test("return FIGURES[2].move()",returnStatement);     
+            
+         // test("S.isOlder(P) ",instanceMethodCall);  
+         	
+            //test("parent.VARNAME",expr);
+
+
+
+    //test("false || (true)",booleanExprOp);      
+   
+  // test("Integer AHOJ=5",varDeclInit);
+
+ // test("class Student void happy() with VALUES[0] as X do on [X<10] A++ on [X / 2 == 0] TEST += 2  end end",documentCode);
+  //test("print A++",statement);
+         
+    //test("return 5 <= 4",returnStatement);
+   //test("Student() print VALUES[1:3] end",method);
+    //test("'bla' ah",stringType);      
+    //test("",documentCode);       
+   
+    // test("class Student Student() end",documentCode);   
+            
+            
+            
+            
+              
+    //test("Boolean ABC = 5",varDeclInit);     
+  /* console.log("BOOLEAN EXPRESSION/DI  TRUE"); 
+ 
+   test("Boolean ABC = true",booleanDI);           
+   test("Boolean ABC = true || false && (!true)",booleanDI);
+   test("Boolean ABC = true || BLA && (!true)",booleanDI);
+    test("Boolean ABC = !true || BLA && (!true)",booleanDI);
+    test("Boolean ABC = (!A>5-4)",booleanDI);  
+    test("Boolean ABC = !VAR.call() == 5",booleanDI);    
+   test("Boolean ABC = 'bls' == 5",booleanDI); 
+   test("false || (true)",booleanExpression);   */
+     
+  
+   
+          
+           
+    /*console.log("STRING EXPRESSIONS  TRUE /DI ");
+    test("'5.2'",stringExpression);  
+    test("VAR.VARIABLE",stringExpression); 
+    test("VAR.VARIABLE+'halo kde ste'",stringExpression); 
+    test("call()+'tu 54'+VAR.VARIABLE+'halo kde ste'",stringExpression);  
+    test("(VAR.VARIABLE)+('halo kde ste')+BLA+Student.AGE",stringExpression); 
+    test("constant String CISLO54 = AHOJ.start()+BLA+'4-5.2'+((VAR.PODVAR+bla())+Student.AGE)",stringDI)       
+     */ 
+   /* console.log("INTERFACE TRUE");
+    test("interface Student void start(Boolean A, String AHOJ)",interface);   
+    test("interface Student Integer start(Boolean A, String AHOJ) void vypis(Student S)",interface);    
+            
+    
+            
+    console.log("Dictionary DI TRUE");  
+    test("Dictionary DICT = ()",  dictionaryDI);                                   
+    test("Dictionary DICT = ('first':5.4, 'second':'bla')",  dictionaryDI);  
+    test("Dictionary DICT = (12:5.4, 4.8:'bla')",  dictionaryDI); 
+    test("Dictionary DICT = (12:5.4+2, 4.8:'bla'+5)",  dictionaryDI); 
+    test("constant Dictionary DICT = (5:'bla bla')",  dictionaryDI);
+    test("Dictionary DICT = ('first':AHOJ, 'second':start())",  dictionaryDI); 
+    test("Dictionary DICT = ('first':('podfirst':5), 'second':4)",  dictionaryDI); 
+    test("Dictionary DICT = ('first':(4.4:5), 'second':4)",  dictionaryDI); 
+    test("Dictionary DICT = ('first':[], 'second':4)",  dictionaryDI); */
+            
+            
+     /*          
+    console.log("List DI TRUE");
+    test("constant List LIST = []",  listDI);                                    
+    test("constant List LIST = ['bls',5,bla(),VAR.bla()]",  listDI); 
+    test("List LIST45 = [5,bla(),[4,'ahoj'],[55]]",  listDI); 
+    test("List LIST45 = [('first':AHOJ, 'second':start()),('first1':AHOJ, 'second1':start())]",  listDI); 
+    test("List LIST45 = POLE[:]",listDI); 
+    test("List LIST45 = POLE[5:]",  listDI); 
+    test("List LIST45 = POLE[:VAR.POVAR]",  listDI); 
+    test("List LIST45 = POLE[(1+4):(2*7)]",  listDI); */
+            
+  /*  console.log("Json DI TRUE"); 
+    test("constant Json JSON = {}",  jsonDI); 
+    test("constant Json JSON = {'firstName':'John'}",  jsonDI); 
+    test("constant Json JSON = {'firstName':5+4, 'bla':[1,2,3]}",  jsonDI); 
+    test("constant Json JSON = {'doctor':{'firstName':'John','age':30}}",  jsonDI); 
+    test("constant Json JSON = {'doctor':{'firstName':'John','age':AGE}}",  jsonDI);          
+            
+    console.log("IMAGE DI TRUE");
+    test("constant Image IMG = Image([1,2,3]) ", imageDI);
+    test("constant Image IMG = Image('sdjsh dsjhs.png') ", imageDI);    
+            
+    console.log("GET VALUE LIST TRUE");
+    test("VALUE[5]",getValueList);
+    test("VALUE[5][AHOJ]",getValueList);      
+            
+            
+    console.log("GET VALUE DICTIONARY TRUE");
+    test("DICT[5]['key']",getValueDict); 
+    test("DICT['bla']['key'][JEJ]",getValueDict);
+            
+    console.log("CREATE INSTANCE TRUE");
+    test("StudentFirst()",createInstance);
+            
+    console.log("METHOD CALL TRUE");
+    test("start(VAR,-4.7)",methodCall);  */ 
+            
+    
+    //STATEMENTS        
+   /* console.log("ASSIGN TRUE");
+    test("AHOJ = 5",assign);
+    test("AHOJ['bla'] += call()",assign);
+    test("AHOJ.NAME ++ call()",assign);
+    console.log("PRINT TRUE");
+    test("print VAR",print) 
+    test("print 'the number'+A+'is greater than'+(10 - 6)",print);   
+    console.log("WHILE TRUE");
+    test("while A print 5 end",whileStatement);
+    test("while A print 4 return 5 while B print 6 end end",whileStatement);
+    console.log("RETURN TRUE");
+    test("return ",returnStatement);*/
+   
+    /*console.log("FOREACH TRUE");
+    test("foreach ITEM in 'bla1' print ITEM print ITEM2 foreach C in 'bla2' print C end end",foreach); 
+    test("foreach ITEM in 'bla1' print ITEM foreach C in 'bla2' print C return D+4 end end",foreach); 
+    test("foreach ITEM in [1,4,BLA] foreach C in AHOJ print C return D+4 end end",foreach);
+    test("foreach ITEM in [1,4,BLA] while A+5 return A end end",foreach);
+       
+    console.log("FOR TRUE");
+    test("for I in [0,10,2] A = BLA end",forStatement);
+    test("for I in [5,1,0] A = BLA B=5 for J in [-4,ZA] print ZA end end",forStatement);
+            
+    console.log("WITH DO");
+    test("with VALUES[0] as X do on [X+5] TEST=1  on [X-5] TEST=1+4 end  ",withDo);
+    test("with VALUES[0] as X do on [X+5] TEST=1 print BLA on [X-5] TEST=1+4 end  ",withDo);
+            
+    console.log("CONDITIONAL STATEMENT");
+    test("if A+5 print A",conditionalStatement);
+    test("if A+5 print A elseif B+6 print B else return A end",conditionalStatement);
+    test("if A+5 print A else if B+6 return B else print C end end",conditionalStatement);
+    */
+  
+            /* console.log("METHOD");
+    test("Integer start(Boolean A, Integer B)  if A+5 return 4 print 5 else print C end end",method);
+    test("void start(Boolean A, Integer B)  if A+5 return 4 print 5 else print C end end",method);
+    test("Student(Boolean A, Integer B)  return 4  end",method); 
+    test("Integer bla(Boolean A, Integer B) end",method); 
+    test("Student()  end",method);
+    
+    
+    console.log("IMPORT");
+    test("import 'ahoj'+'txt'",importStatement);
+            
+    console.log("CLASS");
+    test("class Student looks like a Student A=5  void start() print A end void end() return C  end",classDeclaration);
+    test("class Student  A=5  void start() print A end void end() return C  end",classDeclaration);
+    test("class Student is a kind of Hura looks like a Student A = 5 void start() print A end void end() return C  end",classDeclaration);
+    test("class Student looks like a Student is a kind of Hura  A = 5 void start() print A end void end() return C  end",classDeclaration)*/
+            
+         
+            
+            
+    
+          
+            
+            
+            
+            
+            
+            
+            
+            
+            
+    /////////////////////////////        
+            
+            
+            
+            
+            
+    //IMAGE DI FALSE
+    //test("constant Image IMG = Image() ", imageDI);    
+                    
+    
+            
+    //NUMBER EXPRESSION FALSE alebo ZVYSI SA
+    //test("(aho5j()+(-5.8)",numberExpression);
+    //test("(ahoj()+*(-5.8)",numberExpression);
+   // test("5+4(",numberExpression);
+    //test("5--4",numberExpression);
+    // test("5++--4",numberExpression);
+    //test("5-+--4",numberExpression);             
+    
+     
+    
+            
+    //STRING EXPRESSIONS  FALSE
+    //test("5.2",stringExpression);            //SKUS OPRAVIT!!!!!!!!!!
+    //test("'ahoj'-BLA",stringExpression);            
+            
+            
+            
+            
+   
+    //Dictionary DI FALSE 
+    //test("Dictionary DICT = ('bad':5.4+2, 5:15)",  dictionaryDI); 
+    //test("Dictionary DICT = ('first':AHOJ, 'second':start()",  dictionaryDI);         
+    //test("Dictionary DICT = ('first':('podfirst':5), 11:4)",  dictionaryDI);
+    //test("Dictionary DICT = ('first':(4.4:5, 'podfirst':1), 'second':4)",  dictionaryDI); 
+            
+ 
+    
+ 
+     //Json DI FALSE
+     // test("Json JSON5 = {'firstName':5+4, 1:[1,2,3]}",  jsonDI);  
+     //test("constant Json JSON = {'doctor':{'firstName':'John',55:AGE}}",  jsonDI);           
+    //test("constant Json JSON = ",  jsonDI); 
+            
+     
+    
+    //GET VALUE LIST FALSE
+    //test("VALUE[]",getValueList);
+    //test("VAlUE[5]",getValueList);
+    
+    
+            
+    
+
+
+      
+        </script>
+        
+    </body>
+    
+    
+    
+    
+    
+</html>
