@@ -1,0 +1,16 @@
+#VOLANIE INTERNEJ VOID METODY#
+
+
+class User
+
+    User()
+        String A = "ahoj"
+        A.set(2,"e")
+        print A
+    end
+
+class Startup
+
+    Startup()
+        print "Hello Server"
+    end

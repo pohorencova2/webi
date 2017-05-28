@@ -23,7 +23,7 @@ var instanceMethodCall = {      //CHECK
     END  : [methodCall],   
     JUMP1: [],  //expression 
     CHECK2: ["."],
-    JUMP1: [methodCall],
+    JUMP2: [methodCall],
     RESULT  : []
 };
 
@@ -95,28 +95,17 @@ var getValueListDict = {        //CHECK
 var leftValue = {               //CHECK
     NAME: "leftValue",
     END:[getValueListDict,getValueJson,"varName()",parentVarName,instanceProperty],
-    JUMP1:[getValueListDict,getValueJson,"varName()",parentVarName,instanceProperty],
+    JUMP1:[getValueListDict,getValueJson,"varName()",parentVarName], //instanceProperty
     RESULT: []
 }
 
-var expr = {    
-    NAME:"expr",
-    END: [instanceMethodCall,methodCall,parentMethodCall,leftValue],     
-    JUMP1: [instanceMethodCall,methodCall,parentMethodCall,leftValue],    
-    RESULT:[]
-};
 
 /////////////////EXPRESSIONS/////////////////////////
 
-var expression = {   //CHECK
-    NAME:"expression",
-    END: "",  //booleanExpression,stringExpression,numberExpression,listExpression,dictionaryExpression,jsonExpression,imageExpression
-    JUMP1: "", 
-    RESULT:[]
-}
+
 
 instanceProperty.JUMP1.push(expression);
-instanceMethodCall.JUMP1.push(expression);
+
 inside.END.push(stringExpression,numberExpression);
 inside.JUMP1.push(stringExpression,numberExpression);
 
@@ -125,8 +114,10 @@ inside.JUMP1.push(stringExpression,numberExpression);
 
 var sign = {       //CHECK
     NAME:"sign",
-    END: ["+","-"],     
-    CHECK1: ["+","-"],    
+    END: ["+","-"], 
+    
+    CHECK1: ["+","-"], 
+    
     RESULT:[]
 };
 
@@ -153,22 +144,26 @@ var addsubOp = {       //CHECK
 
 var number = {
     NAME:"number",
-    END: ["digits()"],     
-    TRYJUMP1: addsubOp, 
+    END: ["digits()"], 
+    PROTECT1: "ON",
+    TRYJUMP1: addsubOp,    
     JUMPFUNCTION1: "digits()", 
-    RESULT:[]
-    
+    PROTECT2: "OFF",
+    RESULT:[]    
 }
 
 var NEbrackets = {    //CHECK
     NAME:"NEbrackets",
-    END: [")"],
-    TRYJUMP1: addsubOp,
+    END: [")"],    
+    PROTECT1: "ON",
+    TRYJUMP1: addsubOp,   
     CHECK1: ["("],  
     JUMP1: [],             //numberExpression
     CHECK2: [")"],
+    PROTECT2: "OFF",
     RESULT:[]
 };
+
 
 var numberOrBrackets = {      //CHECK
     NAME:"numberOrBrackets",
@@ -186,23 +181,82 @@ var NEmuldiv = {      //CHECK
 };
 
 
-/*var NEflipOrder = {
-    
+var numberFlipped = {
+    NAME:"number",
+    END: ["digits()"],     
+    TRYJUMP1: addsubOp,    
+    JUMPFUNCTION1: "digits()",   
+    RESULT:[]    
 }
 
+
+
+var NEbracketsFlipped = {    //CHECK
+    NAME:"NEbrackets",
+    END: [")"],
+    TRYJUMP1: addsubOp,   
+    CHECK1: ["("],  
+    JUMP1: [],             //numberExpression
+    CHECK2: [")"],    
+    RESULT:[]
+};
+
+var numberOrBracketsFlipped = {      //CHECK
+    NAME:"numberOrBrackets",
+    END: [numberFlipped,NEbracketsFlipped],
+    JUMP1: [numberFlipped,NEbracketsFlipped],   
+    RESULT:[]  
+};
+
+
+var NEmuldivFlipped = {      //CHECK
+    NAME:"NEmuldiv",
+    END: [numberOrBracketsFlipped],
+    JUMP1: [numberOrBracketsFlipped], 
+    CYCLE1: [muldivOp,numberOrBracketsFlipped],
+    RESULT:[]  
+};
+
+
 var numberExpressionFlipped = {      //CHECK
-    NAME:"numberExpression",
+    NAME:"numberExpressionFlipped",
+    END: [NEmuldivFlipped],
+    JUMP1: [NEmuldivFlipped], 
+    CYCLE1: [addsubOp,NEmuldivFlipped],
+    RESULT:[]  
+};
+
+NEbracketsFlipped.JUMP1.push(numberExpressionFlipped); 
+
+var NEflipOrder = {      //CHECK
+    NAME:"NEflipOrder",
     END: [NEmuldiv],
     JUMP1: [NEmuldiv], 
     CYCLE1: [addsubOp,NEmuldiv],
     RESULT:[]  
 };
 
-//NEbrackets.JUMP1.push(numberExpressionFlipped); 
+
+var numberExpressionNoFlipped= {      //CHECK
+    NAME:"numberExpressionNoFlipped",
+    END: [NEflipOrder], 
+    FLIP1: "ON",
+    JUMP1: [NEflipOrder],
+    FLIP2: "OFF",     
+    RESULT:[]  
+};
 
 var numberExpression= {      //CHECK
+    NAME:"numberExpression",
+    END: [numberExpressionFlipped],    
+    JUMP1: [numberExpressionNoFlipped],    
+    JUMP2: [numberExpressionFlipped],  
+    RESULT:[]  
+};
+
+/*var numberExpression= {      //CHECK
     NAME:"",
-    END: [numberExpressionFlipped],
+    END: [numberExpressionFlipped], 
     FLIP1: "ON",
     JUMP1: [NEflipOrder],
     FLIP2: "OFF",
@@ -210,6 +264,11 @@ var numberExpression= {      //CHECK
     RESULT:[]  
 };*/
 
+
+NEbrackets.JUMP1.push(numberExpressionNoFlipped);    
+
+//SAVE
+/*
 var numberExpression = {      //CHECK
     NAME:"numberExpression",
     END: [NEmuldiv],
@@ -217,47 +276,26 @@ var numberExpression = {      //CHECK
     CYCLE1: [addsubOp,NEmuldiv],
     RESULT:[]  
 };
-NEbrackets.JUMP1.push(numberExpression); 
-
-
+NEbrackets.JUMP1.push(numberExpression); */
 
 
 /////////////////NUNBER EXPRESSION/////////////////////////
 
 
-/////////////////STRING EXPRESSION/////////////////////////
 
-var characters2 = {       //CHECK
-    NAME:"characters2",
-    END: "characters2()",      
-    JUMPFUNCTION1: "characters2()",    
+
+
+
+var numberFirst = {         //CHECK
+    NAME:"numberFirst",
+    END: [],      
+    JUMP1: [numberExpression],  //NEmuldivFlipped
+    CHECK1: ["+"],
+    JUMP2: [],
     RESULT:[]
 };
 
-var stringType2 = {          //CHECK
-    NAME:"stringType2",
-    END: ['"'],
-    CHECK1: ['"'],  
-    TRYJUMPREPEAT1: characters2,
-    CHECK2: ['"'],
-    RESULT:[]
-};
 
-var characters = {         //CHECK
-    NAME:"characters",
-    END: "characters()",      
-    JUMPFUNCTION1: "characters()",    
-    RESULT:[]
-};
-
-var stringType = {       //CHECK
-    NAME:"stringType",
-    END: ["'"],
-    CHECK1: ["'"],  
-    TRYJUMPREPEAT1: characters,
-    CHECK2: ["'"],
-    RESULT:[]
-};
 
 var SEbrackets = {        //CHECK
     NAME:"SEbrackets",
@@ -268,25 +306,148 @@ var SEbrackets = {        //CHECK
     RESULT:[]
 };
 
-var SEoperant = {      //CHECK
-    NAME:"SEoperant",
-    END: [SEbrackets,stringType,stringType2,numberExpression,expr],    
-    JUMP1: [SEbrackets,stringType,stringType2,numberExpression,expr],    
+
+var stringOperant = {       //CHECK
+    NAME:"stringOperant",
+    END: [SEbrackets,"stringValue()"],
+    JUMP1: [SEbrackets,"stringValue()"],     
+    RESULT:[]
+};
+
+
+var NEmuldivNoFlipped= {      //CHECK
+    NAME:"NEmuldivNoFlipped",
+    END: [NEmuldiv], 
+    FLIP1: "ON",
+    JUMP1: [NEmuldiv],
+    FLIP2: "OFF",     
+    RESULT:[]  
+};
+
+
+
+var NEmuldivForString= {      //CHECK
+    NAME:"NEmuldivForString",
+    END: [NEmuldivFlipped],    
+    JUMP1: [NEmuldivNoFlipped],    
+    JUMP2: [NEmuldivFlipped],  
+    RESULT:[]  
+};
+
+
+
+
+
+var numberOrString = {       //CHECK
+    NAME:"numberOrString",
+    END: [NEmuldivForString,stringOperant],  
+    JUMP1: [NEmuldivForString,stringOperant],  //NEmuldivFlipped   
+    RESULT:[]
+};
+
+var stringFirst = {      //CHECK
+    NAME:"stringFirst",
+    END: [numberOrString],   //,    
+    JUMP1: [stringOperant],
+    CYCLE1: ["+",numberOrString],  //,
     RESULT:[]
 }; 
 
 var stringExpression = {      //CHECK
     NAME:"stringExpression",
-    END: [SEoperant],
-    JUMP1: [SEoperant], 
-    CYCLE1:["+",SEoperant], 
+    END: [stringFirst,stringOperant,numberFirst],
+    JUMP1: [stringFirst,stringOperant,numberFirst],     
     RESULT:[]
 }; 
 
 SEbrackets.JUMP1.push(stringExpression);
+numberFirst.END.push(stringExpression);
+numberFirst.JUMP2.push(stringExpression);
+
+
+/////////////////STRING EXPRESSION/////////////////////////
+
 
 
 /////////////////BOOLEAN Expression/////////////////////////
+/////////////////////////////////////////////////////////
+/*var NEmuldivForStringForBoolean= {      //CHECK
+    NAME:"NEmuldivForStringForBoolean",
+    END: [NEmuldivNoFlipped],    
+    JUMP1: [NEmuldivNoFlipped],    
+    //JUMP2: [NEmuldivFlipped],  
+    RESULT:[]  
+};
+var numberOrStringForBoolean = {       //CHECK
+    NAME:"numberOrStringForBoolean",
+    END: [NEmuldivForStringForBoolean,stringOperant],  
+    JUMP1: [NEmuldivForStringForBoolean,stringOperant],  //NEmuldivFlipped   
+    RESULT:[]
+};
+
+var stringFirstForBoolean = {      //CHECK
+    NAME:"stringFirstForBoolean",
+    END: [numberOrStringForBoolean],   //,    
+    JUMP1: [stringOperant],
+    CYCLE1: ["+",numberOrStringForBoolean],  //,
+    RESULT:[]
+}; 
+
+var stringExpressionForBoolean = {      //CHECK
+    NAME:"stringExpressionForBoolean",
+    END: [stringFirstForBoolean,stringOperant,numberFirst],
+    JUMP1: [stringFirstForBoolean,stringOperant,numberFirst],     
+    RESULT:[]
+}; 
+
+var stringComparison = {  //CHECK  
+    NAME:"stringComparison",
+    END: [stringExpressionForBoolean],
+    JUMP1: [stringExpressionForBoolean],  
+    JUMP2: [comparisonOp],
+    JUMP3: [stringExpressionForBoolean],    
+    RESULT:[]
+};
+//////////////////////////////////////////////////////////////////
+var NEmuldivForStringForBooleanFlipped= {      //CHECK
+    NAME:"NEmuldivForStringForBoolean",
+    END: [NEmuldivFlipped],    
+    //JUMP1: [NEmuldivNoFlipped],    
+    JUMP2: [NEmuldivFlipped],  
+    RESULT:[]  
+};
+var numberOrStringForBooleanFlipped = {       //CHECK
+    NAME:"numberOrStringForBoolean",
+    END: [NEmuldivForStringForBooleanFlipped,stringOperant],  
+    JUMP1: [NEmuldivForStringForBooleanFlipped,stringOperant],  //NEmuldivFlipped   
+    RESULT:[]
+};
+
+var stringFirstForBooleanFlipped = {      //CHECK
+    NAME:"stringFirstForBoolean",
+    END: [numberOrStringForBooleanFlipped],   //,    
+    JUMP1: [stringOperant],
+    CYCLE1: ["+",numberOrStringForBooleanFlipped],  //,
+    RESULT:[]
+}; 
+
+var stringExpressionForBooleanFlipped = {      //CHECK
+    NAME:"stringExpressionForBoolean",
+    END: [stringFirstForBooleanFlipped,stringOperant,numberFirst],
+    JUMP1: [stringFirstForBooleanFlipped,stringOperant,numberFirst],     
+    RESULT:[]
+}; 
+
+var stringComparisonFlipped = {  //CHECK  
+    NAME:"stringComparison",
+    END: [stringExpressionForBooleanFlipped],
+    JUMP1: [stringExpressionForBooleanFlipped],  
+    JUMP2: [comparisonOp],
+    JUMP3: [stringExpressionForBooleanFlipped],    
+    RESULT:[]
+};*/
+
+
 var equalsOp = {    //CHECK
     NAME:"equalsOp",
     END:["==","!="],         
@@ -294,22 +455,23 @@ var equalsOp = {    //CHECK
     RESULT:[]
 };
 
-var equalsOperantEnd = {   //CHECK
-    NAME:"equalsOperantEnd",
-    END:[expression],         
-    JUMP1:[expression],    
-    RESULT:[]    
-}
-
-var equals = {      //CHECK
-    NAME:"equals",
-    END: [equalsOperantEnd],
-    JUMP1: [expression],  
+var numberEquals = {    //CHECK 
+    NAME:"numberEquals",
+    END: [numberExpressionNoFlipped],
+    JUMP1: [numberExpressionNoFlipped],  
     JUMP2: [equalsOp],
-    JUMP3: [equalsOperantEnd],
-    CYCLE1: [equalsOp,equalsOperantEnd],
+    JUMP3: [numberExpressionNoFlipped], 
     RESULT:[]
 }; 
+
+var numberEqualsFlipped = {    //CHECK 
+    NAME:"numberEquals",
+    END: [numberExpressionFlipped],
+    JUMP1: [numberExpressionFlipped],  
+    JUMP2: [equalsOp],
+    JUMP3: [numberExpressionFlipped], 
+    RESULT:[]
+};
 
 
 var comparisonOp = {   //CHECK 
@@ -320,43 +482,30 @@ var comparisonOp = {   //CHECK
 };
 
 
-var numberComparisonEnd = {   //CHECK   
-    NAME:"numberComparisonEnd",
-    END: [numberExpression],
-    JUMP1: [numberExpression],     
-    RESULT:[]
-}; 
-
 var numberComparison = {    //CHECK 
     NAME:"numberComparison",
-    END: [numberComparisonEnd],
-    JUMP1: [numberExpression],  
+    END: [numberExpressionNoFlipped],
+    JUMP1: [numberExpressionNoFlipped],  
     JUMP2: [comparisonOp],
-    JUMP3: [numberComparisonEnd],
-    CYCLE1: [comparisonOp,numberComparisonEnd],
+    JUMP3: [numberExpressionNoFlipped], 
     RESULT:[]
 }; 
 
-var stringComparisonEnd = {     //CHECK  
-    NAME:"stringComparisonEnd",
-    END: [stringExpression],
-    JUMP1: [stringExpression],     
-    RESULT:[]
-}; 
-
-var stringComparison = {  //CHECK  
-    NAME:"stringComparison",
-    END: [stringComparisonEnd],
-    JUMP1: [stringExpression],  
+var numberComparisonFlipped = {    //CHECK 
+    NAME:"numberComparison",
+    END: [numberExpressionFlipped],
+    JUMP1: [numberExpressionFlipped],  
     JUMP2: [comparisonOp],
-    JUMP3: [stringComparisonEnd],
-    CYCLE1: [comparisonOp,stringComparisonEnd],
+    JUMP3: [numberExpressionFlipped], 
     RESULT:[]
 }; 
 
-var booleanType = {    //CHECK
-    NAME:"booleanType",
+
+
+var booleanValue = {    //CHECK
+    NAME:"booleanValue",
     END: ["true","false"],
+    TRYCHECK1: "!",
     CHECK1: ["true","false"],   
     RESULT:[]
 }; 
@@ -364,9 +513,22 @@ var booleanType = {    //CHECK
 var BEbrackets = {    //CHECK
     NAME:"BEbrackets",
     END: [")"],
+    //PROTECT1: "ON",
+    TRYCHECK1: "!",
     CHECK1: ["("],
     JUMP1: [],
     CHECK2: [")"],
+    //PROTECT2: "OFF",
+    RESULT:[]
+}; 
+
+var BEbracketsFlipped = {    //CHECK
+    NAME:"BEbracketsFlipped",
+    END: [")"],
+    TRYCHECK1: "!",
+    CHECK1: ["("],
+    JUMP1: [],
+    CHECK2: [")"],  
     RESULT:[]
 }; 
 
@@ -379,28 +541,70 @@ var logicalOp = {    //CHECK
 
 var BEoperant= {             //CHECK 
     NAME:"BEoperant",
-    END: [BEbrackets,equals,booleanType,numberComparison,stringComparison,expr], 
+    END: [BEbrackets,booleanValue,numberComparison,numberEquals], //numberComparison,stringComparison,equals doplnit
+    PROTECT1: "ON",    
+    JUMP1: [BEbrackets,booleanValue,numberComparison,numberEquals],  //numberComparison,stringComparison,equals doplnit 
+    PROTECT2: "OFF",
+    RESULT:[]
+};
+
+var BEoperantFlipped= {             //CHECK 
+    NAME:"BEoperant",
+    END: [BEbracketsFlipped,booleanValue,numberComparisonFlipped,numberEqualsFlipped], //numberComparison,stringComparison,equals doplnit  
     TRYCHECK1: "!",
-    JUMP1: [BEbrackets,equals,booleanType,numberComparison,stringComparison,expr],     
+    JUMP1: [BEbracketsFlipped,booleanValue,numberComparisonFlipped,numberEqualsFlipped],  //numberComparison,stringComparison,equals doplnit    
     RESULT:[]
 };
 
 
-var booleanExpression = {     //CHECK
-    NAME:"booleanExpression",
+
+var BEflipOrder = {     //CHECK
+    NAME:"BEflipOrder",
     END: [BEoperant],
     JUMP1: [BEoperant], 
     CYCLE1: [logicalOp,BEoperant],
     RESULT:[]
 };
-BEbrackets.JUMP1.push(booleanExpression);
+
+
+var booleanExpressionFlipped = {     //CHECK
+    NAME:"booleanExpressionFlipped",
+    END: [BEoperantFlipped],
+    JUMP1: [BEoperantFlipped], 
+    CYCLE1: [logicalOp,BEoperantFlipped],
+    RESULT:[]
+};
+
+
+var booleanExpressionNoFlipped= {      //CHECK
+    NAME:"booleanExpressionNoFlipped",
+    END: [BEflipOrder], 
+    FLIP1: "ON",
+    JUMP1: [BEflipOrder],
+    FLIP2: "OFF",     
+    RESULT:[]  
+};
+
+var booleanExpression= {      //CHECK
+    NAME:"booleanExpression",
+    END: [booleanExpressionFlipped],    
+    JUMP1: [booleanExpressionNoFlipped],    
+    JUMP2: [booleanExpressionFlipped],  
+    RESULT:[]  
+};
+
+BEbrackets.JUMP1.push(booleanExpressionNoFlipped);    
+BEbracketsFlipped.JUMP1.push(booleanExpressionFlipped); 
+
+
+
 
 /////////////////DICTIONARY EXPRESSION/////////////////////////
 
 var stringPair = {     //CHECK
     NAME:"stringPair",
     END: [expression],    
-    JUMP1: [stringType,stringType2],
+    JUMPFUNCTION1: "stringValue()",
     CHECK1: [":"], 
     JUMP2: [expression],
     RESULT:[]
@@ -549,10 +753,37 @@ var imageExpression  = {
 };
 
 
-expression.END = [booleanExpression,stringExpression,numberExpression,listExpression,dictionaryExpression,jsonExpression,imageExpression]
-expression.JUMP1 =  [booleanExpression,stringExpression,numberExpression,listExpression,dictionaryExpression,jsonExpression,imageExpression]
+//expression.END = [booleanExpression,stringExpression,numberExpression,listExpression,dictionaryExpression,jsonExpression,imageExpression]
+//expression.JUMP1 =  [booleanExpression,stringExpression,numberExpression,listExpression,dictionaryExpression,jsonExpression,imageExpression]
 
 /////////////////STATEMENTS/////////////////////////
+var createInstance = {        //  CHECK
+    NAME : "createInstance",
+    END  : [")"],
+    JUMPFUNCTION1: "name()",
+    CHECK1: ["("],
+    TRYJUMP1: "",  //values
+    CHECK2: [")"],
+    RESULT  : []
+};
+
+
+
+var expr= {    
+    NAME:"expr",
+    END: ["varName()",createInstance,methodCall],     //instanceMethodCall,methodCall,parentMethodCall,leftValue
+    JUMP1: ["varName()",createInstance,methodCall],    //instanceMethodCall,methodCall,parentMethodCall,leftValue
+    RESULT:[]
+};
+
+var expression = {   //CHECK
+    NAME:"expression",
+    END: [expr,stringExpression,numberExpression],  //booleanExpression,stringExpression,numberExpression,listExpression,dictionaryExpression,jsonExpression,imageExpression
+    JUMP1: [expr,stringExpression,numberExpression], 
+    RESULT:[]
+}
+
+
 var values = {      //CHECK
     NAME:"values",
     END: [expression],
@@ -560,6 +791,14 @@ var values = {      //CHECK
     CYCLE1: [",",expression],   
     RESULT:[]
 }; 
+createInstance.TRYJUMP1 = values;
+instanceMethodCall.JUMP1.push(expression);
+
+
+
+
+
+
 listType.TRYJUMP1 = values;
 methodCall.TRYJUMP1 = values;
 
@@ -588,9 +827,9 @@ var assign = {            //CHECK
 }*/
 var print = {          //CHECK
     NAME:"print",
-    END: ["print",numberExpression],
+    END: ["print",expression],  //stringExpression,numberExpression
     CHECK1: ["print"],    
-    JUMP1:[numberExpression],    
+    JUMP1:[expression],      //stringExpression,numberExpression
     RESULT:[]    
 }
 
@@ -695,8 +934,8 @@ var forStatement = {           //CHECK
     TRYJUMP1 : step,
     TRYJUMP2 : step,
     CHECK4: ["]"],
-    JUMP2: [statement],
-    TRYJUMPREPEAT1: statement,  
+    JUMP2: [],         //statement
+    TRYJUMPREPEAT1: "", //statement  
     CHECK5: ["end"],
     RESULT:[] 
 }
@@ -795,11 +1034,13 @@ var conditionalStatement = {     //CHECK
 
 var statement = {
     NAME:"statement",
-    END: [print],
-    JUMP1: [print],
+    END: [print,forStatement,assign,varDeclInit,varDecl,methodCall,instanceMethodCall],
+    JUMP1: [print,forStatement,varDeclInit,varDecl,assign,methodCall,instanceMethodCall], //assign,
     RESULT: []
     
 }
+forStatement.JUMP2.push(statement);
+forStatement.TRYJUMPREPEAT1 = statement;
 
 
 ///////////////////////////CLASS DECLARATION////////////////////////////////////////
@@ -812,15 +1053,6 @@ var parameters ={                                //CHECK
     RESULT:[]
 };
 
-var createInstance = {        //  CHECK
-    NAME : "createInstance",
-    END  : [")"],
-    JUMPFUNCTION1: "name()",
-    CHECK1: ["("],
-    TRYJUMP1: values,
-    CHECK2: [")"],
-    RESULT  : []
-};
 
 var headerConstructor ={                 //CHECK2
     NAME:"headerConstructor",

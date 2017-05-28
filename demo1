@@ -1,0 +1,25 @@
+#VYTVORENIE INSTANCIE NASEJ CLASS A NA NEJ VOLANIE METODY#
+
+class User
+
+    User()
+        Student A = Student()
+        A.call("hura")
+    end
+
+
+class Student
+
+    Student()
+    end
+
+    Void call(String VYRAZ)
+        print VYRAZ
+    end
+
+
+class Startup
+
+    Startup()
+        print "Hello Server"
+    end

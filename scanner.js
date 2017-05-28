@@ -1,11 +1,13 @@
 
 
-function scan(){    //finds one token      
+function scan(){    //finds one token  
+            
         while (character == " "  ){        //skip space             
             next()
         }
-        token = "";
+        token = "";        
         position = index-1;
+    //console.log("p",position);
         if (isNumber(character)){              
             while (isNumber(character)){
                 
@@ -59,6 +61,28 @@ function scan(){    //finds one token
                 next();
                 scan();
             }
+            else if (character == "'"){  
+                token += character;
+                next();
+                while (character != "'"){   //co ak nenajde
+                    token += character;
+                    next();                                      
+                } 
+                token += character;
+                next();
+                
+            }
+            
+            else if (character == '"'){  
+                token += character;
+                next();
+                while (character != '"'){   //co ak nenajde
+                    token += character;
+                    next();                                     
+                } 
+                token += character;
+                next();
+            }
          
         
             
@@ -83,22 +107,25 @@ function scan(){    //finds one token
                 token = character;
                 next();                
             } }               
-        }        
+        }     
+    
 }
         
-function next(){  //finds ona character
-    if (index >= input.length){
-        character = "/0"
-    }
-    else{
-        character = input[index];            
-        index++;
-    } 
+function next(){  //finds one character
+           
+        if (index >= input.length){
+            character = "/0"
+        }
+        else{
+            character = input[index];            
+            index++;
+        } 
+    
 }
         
 function isLetter(check) {   //check is character is letter
     /*if (check == "\n"){
-        console.log("bol som tu");
+        //console.log("bol som tu");
     }*/
   
     if (check.match(regex)){

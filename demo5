@@ -1,0 +1,37 @@
+class User
+
+    Startup APPLICATION
+
+    User()
+        Student A = Student()
+        A.call("hura Client")
+        APPLICATION.hello()
+        print "done"
+    end
+
+    Void hi()
+        print "hi at client"
+    end
+
+class Student
+
+    Student()
+    end
+
+    Void call(String VYRAZ)
+        print VYRAZ
+    end
+
+
+class Startup
+    User USERS
+
+    Startup()
+        Student A = Student()
+        A.call("hura Server")        
+    end
+
+    Void hello()
+       print "hello at server"
+       USERS.hi()
+    end

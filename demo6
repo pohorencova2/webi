@@ -1,0 +1,15 @@
+#PRIKLAD NUMERICKEHO VYRAZU#
+
+
+class User
+
+    User()
+        Number A = -3*(5.4+0.7)+1
+        print A
+    end
+
+class Startup
+
+    Startup()
+        print "Hello Server"
+    end

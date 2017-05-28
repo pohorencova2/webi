@@ -1,0 +1,74 @@
+<html lang="en">
+<head>
+<script src="http://localhost:8022/socket.io/socket.io.js"></script>
+<title>ACE in Action</title>
+<style type="text/css" media="screen">
+    
+</style>
+</head>
+<body>  
+
+    
+<canvas id="canvas" width="800" height="500" style="border:1px solid black">
+
+</canvas><br><br>
+    
+<textarea id="output" rows="10" style="width:802">
+
+</textarea>
+   
+<script type="text/javascript" src="diagrams.js"></script>
+<script type="text/javascript" src="parser.js"></script> 
+<script type="text/javascript" src="scanner.js"></script> 
+<script type="text/javascript" src="syntaxTrees.js"></script>      
+
+<script>
+     var socket = io('http://localhost:8022', {path: '/socket.io'});
+    
+    function getServerSocket()
+    {
+        return socket;
+    }
+     
+    var clientId;
+    
+    socket.on('message', function(data) {
+        var cmd = data.cmd;
+        switch (cmd){
+            case "client-id": 
+                clientId = data.clientId;
+                 break;
+             case "source":
+                socket.emit('message',{"cmd":"run"});                
+                var programSource = data.source;
+                var webiTree = build(programSource);
+                startBuild(webiTree,"client", clientId, socket);
+                break;
+            case "method-call":
+                prg.rm.localMethodCall(data.refId,data.method,data.argTypes,data.argValues);
+                break;
+        }
+    });
+    
+    setTimeout(function() { 
+      console.log("sending new-client");
+      socket.emit('message',{"cmd":"new-client"});
+      load();
+    }, 2000);
+    
+    function load(){
+         socket.emit('message',{"cmd":"get-source"});
+        
+    }
+    
+    
+    
+   
+
+    
+    
+    
+    
+</script>
+</body>
+</html>

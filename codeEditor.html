@@ -1,0 +1,199 @@
+<html lang="en">
+<head>
+<script src="http://localhost:8022/socket.io/socket.io.js"></script>
+<title>ACE in Action</title>
+<style type="text/css" media="screen">
+    #editor { 
+        position: absolute;
+        top: 40;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 840;
+    }
+    #run { 
+        
+    }
+</style>
+</head>
+<body>
+
+<div id="editor">#write code here# </div>
+    
+<button id="run" type="button" onclick="start()">Run</button>   
+<button id="save" type="button" onclick="save()">Save</button>
+<button id="load" type="button" onclick="load()">Load</button>
+<select id="startDemo" onchange="changeProgram()">
+  <option>Calling method in user-defined class</option>
+  <option>Calling built-in method</option>
+  <option>Example of drawing with GUI </option>
+  <option>Using class on both sides - server and client</option>
+  <option>Calling methods remotely from server and client sides</option>
+  <option>Example of evaluating arithmetic expressions</option>
+  <option selected>---</option>
+    
+</select>   <br> 
+   
+    
+   
+<script type="text/javascript" src="diagrams.js"></script>
+<script type="text/javascript" src="parser.js"></script> 
+<script type="text/javascript" src="scanner.js"></script> 
+<script type="text/javascript" src="syntaxTrees.js"></script>      
+<script src="ace-builds/src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+<script src="ace-builds/src-noconflict/ext-language_tools.js"></script>
+<script>
+     var socket = io('http://localhost:8022', {path: '/socket.io'});
+     var webiTree = {};
+     var modified = false;
+    
+   
+     
+    
+    socket.on('message', function(data) {
+        var cmd = data.cmd;
+        switch (cmd){
+            case "source":
+                editor.setValue(data.source);
+                modified = false;
+                break;
+            
+        }
+    });
+    
+    load();	
+    
+    
+    function save(){
+        socket.emit('message',{"cmd":"send-source","source":editor.getValue()});
+        
+    }
+    
+    function load(){
+        
+        socket.emit('message',{"cmd":"select-demo","number":0});
+         socket.emit('message',{"cmd":"get-source"});
+        
+        
+    }
+   
+    
+    function changeProgram(){
+        save();
+        var n = document.getElementById("startDemo").selectedIndex+1;
+        socket.emit('message',{"cmd":"select-demo","number":n});
+        socket.emit('message',{"cmd":"get-source"});
+        
+    }
+    
+    
+    
+    
+    var editor = ace.edit("editor");
+    modified = false;
+    editor.setTheme("ace/theme/tomorrow_night_bright"); //tomorrow_night_bright, tomorrow    
+    editor.getSession().setMode("ace/mode/python");
+   //editor.setValue("//write code here");        //  set to default value
+   //editor.getValue();                           //get value
+   //editor.gotoLine(5);                         //go to line with cursor
+   //editor.session.getLength();                 //get total number of lines
+    document.getElementById('editor').style.fontSize='14px';
+   // document.getElementById('editor').style.width='840px';
+    //document.getElementById('editor').style.marginTop='90px';
+     editor.setOptions({             //pomocnik
+        enableBasicAutocompletion: true,
+        enableSnippets: true,
+        enableLiveAutocompletion: false
+    });
+    
+    
+     
+     editor.getSession().on('change',function(e){
+        modified = true;                       
+    });
+    
+       
+            
+            
+     function start() { 
+      socket.emit('message',{"cmd":"select-demo","number":0});   
+      if (modified){
+          save();  
+          socket.emit('message',{"cmd":"restart"});  
+      }
+           
+        
+         
+       window.open("run.html");   
+       
+    } 
+    
+    function test(code, what) {
+       input = code;
+       diag = what;
+ 
+       console.log("VYPIS AKO VYZERAJU TOKENY");
+        index=0;
+        next();
+        scan();  
+        while (token != ""){             
+            console.log(token);            
+            scan();
+        }
+        //console.log(code);
+        input = code;
+        index=0;
+        next();
+        scan(); 
+        parse();   
+        console.log("////////////////////////////////////");
+        //startBuild();
+       
+       
+        
+    }
+    //test("call()",expr);
+    //test("for I in [1+4,10,2] print 5 end",forStatement);
+    //test("call()",statement);
+    //test("Number V='str'",varDeclInit);
+    //test("'a'>'b'",booleanExpression);
+    //test("5==4",booleanExpression);
+   // test("(5/4)*7+'bla'+'ahoj'",stringExpression);
+    //test("true && false || (5>4)>2 && (2==5)",booleanExpression);
+    //test("2==5",booleanExpression);
+   
+   // test("(5)",numberExpression);
+    //test("print true || false ",print);
+    //test("(5>=4)",booleanExpression);
+    
+    //test("5+'cau'",stringExpression);
+     //test("7/(5+2)-4",numberExpression);
+    //test("'ahoj'+(5-6)",stringFirst);
+            
+    //test("5/2*1+(5+4)+'cau'",stringExpression); 
+    //test("print 4*5+7+'ahoj'",print); 
+    //test("'cau'+5+(2/1)",stringExpression);
+   //test("(2/1)",NEmuldivForString)
+    
+    
+     //test("'pohi'+'bla'",stringExpression);
+    //test("'cau'+5+(2/1)",stringExpression);
+    //test("'cau'+5+2/1",stringExpression);
+    
+    //test("Void start() print (2+1*(-7/2))   end",method);
+   // test("print 5+8/2  ",print);
+   // test("'skusam prvy'",stringExpression);
+    //test("'skusam prvy'+3+4 + 'druhy'",stringExpression);
+    //test("7 + 'prvy'+3+4 + 'druhy'",stringExpression);
+    //test("8/4*2 + 'prvy'",stringExpression);
+    //test("'prvy'+(4+2)*3",stringExpression);
+    //test("'b'+3/4",stringExpression);
+    //test("'b'+3-4",stringExpression);
+    //test("'b'/3-4",stringExpression);
+    //test("print 'b'+3+4",print);
+    //test("-(5+4*(-10/-2))",numberExpression)
+    
+    
+</script>
+</body>
+</html>

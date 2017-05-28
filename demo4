@@ -1,0 +1,24 @@
+class User
+
+    User()
+        Student A = Student()
+        A.call("hura Client")
+    end
+
+
+class Student
+
+    Student()
+    end
+
+    Void call(String VYRAZ)
+        print VYRAZ
+    end
+
+
+class Startup
+
+    Startup()
+        Student A = Student()
+        A.call("hura Server")
+    end

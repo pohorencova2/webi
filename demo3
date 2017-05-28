@@ -1,0 +1,29 @@
+class User
+
+    User()
+        Playground P = Playground(50,20,800,600)
+        P.bgColor("lightblue")
+        P.drawLine(200,120,300,120, "yellow", 4)
+        P.drawLine(200,120,200,20, "yellow", 4)
+        P.drawLine(200,120,200,200, "yellow", 4)
+        P.drawLine(200,120,270,180, "yellow", 4)
+        P.drawLine(200,120,160,180, "yellow", 4)
+        P.drawLine(200,120,230,190, "yellow", 4)
+        P.drawRect(400,300,300,300,"orange","brown")
+        P.drawLine(550, 200, 400, 300, "brown", 3)
+        P.drawLine(700, 300, 550, 200, "brown", 3)
+        P.drawRect(580, 400,120,100,"blue","brown")
+        P.drawText(430,100,"WEBI is Perfect!")
+        P.drawCircle(200,120,50,"yellow", "orange")
+        P.drawText(432,101,"WEBI is Perfect!")
+        P.drawCircle(180,90,5,"pink", "orange")
+        P.drawCircle(220,90,5,"pink", "orange")
+        P.drawArc(200,120,40, -0.4, 3.5)
+        P.drawImage(20, 200, "nicetree.png")
+
+    end
+
+class Startup
+    Startup()
+        print "Hello Server"
+    end
